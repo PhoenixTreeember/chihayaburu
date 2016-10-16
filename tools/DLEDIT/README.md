@@ -3,4 +3,4 @@
 Python3とPillowが必要です。
 
 起動方法は、srcディレクトリに移動して
-python3 ED
+python3 DLEDIT

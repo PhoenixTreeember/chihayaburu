@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,21 +29,70 @@ import argparse
 from tensorflow.examples.tutorials.mnist import input_data
 
 import tensorflow as tf
+import sys
+import numpy as np
+from PIL import Image
+from PIL import ImageOps
 
 FLAGS = None
 
+# 夏谷追加
+kana_list = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'
+image_size = 28
+kana_num = len(kana_list)
+
+# 各自の環境に置き換えてください
+train_csv = '/media/natu/data/data/src/output/train.csv'
+test_csv = '/media/natu/data/data/src/output/test.csv'
+
+
+def input_data_from_csv(file):
+  """
+  引数で指定されたcsvファイルから、画像データとラベルを読み込み、numpyの配列として返す。
+  """
+  images = []
+  labels = []
+  try:
+    fp = open(file, 'r')
+  except FileNotFoundError:
+    print("Error %s がオープンできません" % file)
+    sys.exit()
+
+  for l in fp.readlines():
+    l = l.rstrip()
+    img_name, label = l.split(',')
+
+    # 画像ファイルを開き、モノクロ化、リサイズ
+    img_ori = Image.open(img_name)
+    img_gray = ImageOps.grayscale(img_ori)
+    img_resized = img_gray.resize((image_size,image_size))
+
+    # imageををnumpyに変更して、imagesに追加
+    img_ary = np.asarray(img_resized)
+    images.append(img_ary.flatten().astype(np.float32) / 255.0)
+
+    # ラベルの追加
+    labels.append(int(label))
+
+  return images, labels
+
 
 def main(_):
-  mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
+  # mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
+  #  2つのcsvファイルから画像データとラベルの配列を読み込む
+  train_img, train_label = input_data_from_csv(train_csv)
+  test_img, test_label = input_data_from_csv(test_csv)
+
+  sys.exit()
 
   # Create the model
-  x = tf.placeholder(tf.float32, [None, 784])
-  W = tf.Variable(tf.zeros([784, 10]))
-  b = tf.Variable(tf.zeros([10]))
+  x = tf.placeholder(tf.float32, [None, image_size * image_size])
+  W = tf.Variable(tf.zeros([image_size * image_size, kana_num]))
+  b = tf.Variable(tf.zeros([kana_num]))
   y = tf.matmul(x, W) + b
 
   # Define loss and optimizer
-  y_ = tf.placeholder(tf.float32, [None, 10])
+  y_ = tf.placeholder(tf.float32, [None, kana_num])
 
   # The raw formulation of cross-entropy,
   #
