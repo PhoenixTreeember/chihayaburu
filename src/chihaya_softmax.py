@@ -40,6 +40,8 @@ FLAGS = None
 kana_list = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'
 image_size = 28
 kana_num = len(kana_list)
+batch_size = 100
+max_step = 1000
 
 # 各自の環境に置き換えてください
 train_csv = '/media/natu/data/data/src/output/train.csv'
@@ -72,7 +74,9 @@ def input_data_from_csv(file):
     images.append(img_ary.flatten().astype(np.float32) / 255.0)
 
     # ラベルの追加
-    labels.append(int(label))
+    label_array = np.zeros(kana_num)
+    label_array[int(label)] = 1
+    labels.append(label_array)
 
   return images, labels
 
@@ -82,46 +86,68 @@ def main(_):
   #  2つのcsvファイルから画像データとラベルの配列を読み込む
   train_img, train_label = input_data_from_csv(train_csv)
   test_img, test_label = input_data_from_csv(test_csv)
+  train_data_size = len(train_img)
 
-  sys.exit()
+  # GPUを無効
+  with tf.Graph().as_default():
 
-  # Create the model
-  x = tf.placeholder(tf.float32, [None, image_size * image_size])
-  W = tf.Variable(tf.zeros([image_size * image_size, kana_num]))
-  b = tf.Variable(tf.zeros([kana_num]))
-  y = tf.matmul(x, W) + b
+    with tf.device('/gpu:0'):
+      # Create the model
+      x = tf.placeholder(tf.float32, [None, image_size * image_size])
+      W = tf.Variable(tf.zeros([image_size * image_size, kana_num]))
+      b = tf.Variable(tf.zeros([kana_num]))
+      y = tf.matmul(x, W) + b
 
-  # Define loss and optimizer
-  y_ = tf.placeholder(tf.float32, [None, kana_num])
+    # Define loss and optimizer
+      y_ = tf.placeholder(tf.float32, [None, kana_num])
 
-  # The raw formulation of cross-entropy,
-  #
-  #   tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(tf.softmax(y)),
-  #                                 reduction_indices=[1]))
-  #
-  # can be numerically unstable.
-  #
-  # So here we use tf.nn.softmax_cross_entropy_with_logits on the raw
-  # outputs of 'y', and then average across the batch.
-  cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
-  train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+    # The raw formulation of cross-entropy,
+    #
+    #   tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(tf.softmax(y)),
+    #                                 reduction_indices=[1]))
+    #
+    # can be numerically unstable.
+    #
+    # So here we use tf.nn.softmax_cross_entropy_with_logits on the raw
+    # outputs of 'y', and then average across the batch.
+      cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
+      train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
-  sess = tf.InteractiveSession()
-  # Train
-  tf.initialize_all_variables().run()
-  for _ in range(1000):
-    batch_xs, batch_ys = mnist.train.next_batch(100)
-    sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
+    #sess = tf.InteractiveSession()
+    # Train
+    #tf.initialize_all_variables().run()
+    # 変数の初期化
+    sess = tf.InteractiveSession(config=tf.ConfigProto(log_device_placement=False))
+    sess.run(tf.initialize_all_variables())
 
-  # Test trained model
-  correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-  accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-  print(sess.run(accuracy, feed_dict={x: mnist.test.images,
-                                      y_: mnist.test.labels}))
+    for step in range(max_step):
+      for i in range(train_data_size//batch_size):    # //は切り捨て
+        batch = batch_size * i
+        sess.run(train_step, feed_dict={
+          x: train_img[batch:batch + batch_size],
+          y_: train_label[batch:batch + batch_size]})
+
+ #    sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
+
+      # Test trained model
+      if step % 100 == 0:
+        correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        print('step=%d  :' % step, end="")
+        print(sess.run(accuracy, feed_dict={x: test_img,
+                                            y_: test_label}))
+
+    print('final')
+    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    print(sess.run(accuracy, feed_dict={x: test_img,
+                                        y_: test_label}))
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--data_dir', type=str, default='/tmp/data',
                       help='Directory for storing data')
   FLAGS = parser.parse_args()
-  tf.app.run()
+  main('')
+
+  #tf.app.run()
