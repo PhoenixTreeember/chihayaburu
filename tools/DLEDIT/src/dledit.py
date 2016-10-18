@@ -17,14 +17,14 @@ img_ext_list = ['.bmp', '.png', 'jpg']
 # 設定
 #------------------------------------------------------------
 # 画像領域のサイズ
-image_area_width = 800
-image_area_height = 600
+image_area_width = 600
+image_area_height = 400
 image_dir = "C:/Users/mnatsutani/Pictures"
 output_dir = "C:/Users/mnatsutani/Pictures/out"
 
 # 固定選択モード
-fixed_sel_mode = True
-fixel_sel_sise = 20
+fixed_sel_mode = False
+fixed_sel_size = 200
 
 #------------------------------------------------------------
 

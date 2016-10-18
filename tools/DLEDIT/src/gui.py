@@ -88,6 +88,7 @@ class ImageFrame(tk.Frame):
 
         # 表示された画像の拡大率
         self.rate = 1.0
+
         self.sx = 0
         self.sy = 0
         self.ex = 0
@@ -141,26 +142,48 @@ class ImageFrame(tk.Frame):
 
     # マウスイベント
     def click(self, event):
-        self.ondrag = True
-        self.sx = event.x
-        self.sy = event.y
-        if self.id != None:
-            self.canvas.delete(self.id)
+        if dledit.fixed_sel_mode:
+            if self.id != None:
+                self.canvas.delete(self.id)
+            self.mx = event.x
+            self.my = event.y
+            sx, sy, ex, ey = self.calc_rectalge(event.x, event.y)
+            self.id = self.canvas.create_rectangle(sx, sy, ex, ey, outline='red', width=2)
+            self.sx = sx
+            self.sy = sy
+            self.ex = ex
+            self.ey = ey
+            self.update_selected_area_status()
+        else:
+            self.ondrag = True
+            self.sx = event.x
+            self.sy = event.y
+            if self.id != None:
+                self.canvas.delete(self.id)
+
 
     def move(self, event):
-        self.mx = event.x
-        self.my = event.y
+        if dledit.fixed_sel_mode:
+            if self.id != None:
+                self.canvas.delete(self.id)
+
+            self.sx, self.sy, self.ex, self.ey = self.calc_rectalge(event.x, event.y)
+            self.id = self.canvas.create_rectangle(self.sx, self.sy, self.ex, self.ey, outline='red', width=1)
+        else:
+            self.mx = event.x
+            self.my = event.y
         self.mouse_status_update()
 
     def motion(self, event):
         self.move(event)
-        if self.ondrag:
-            if self.id != None:
-                self.canvas.delete(self.id)
+        if not dledit.fixed_sel_mode:
+            if self.ondrag:
+                if self.id != None:
+                    self.canvas.delete(self.id)
 
-            self.ex = event.x
-            self.ey = event.y
-            self.id = self.canvas.create_rectangle(self.sx, self.sy, self.ex, self.ey, outline='red', width=1 )
+                self.ex = event.x
+                self.ey = event.y
+                self.id = self.canvas.create_rectangle(self.sx, self.sy, self.ex, self.ey, outline='red', width=1 )
 
     def release(self, event):
         if self.ondrag:
@@ -186,6 +209,12 @@ class ImageFrame(tk.Frame):
         self.mouse_status = str
         self.mouse_status_update()
 
+    def calc_rectalge(self, x, y):
+        sx = x - (dledit.fixed_sel_size / 2) * self.rate
+        sy = y - (dledit.fixed_sel_size / 2) * self.rate
+        ex = x + (dledit.fixed_sel_size / 2) * self.rate
+        ey = y + (dledit.fixed_sel_size / 2) * self.rate
+        return sx, sy, ex, ey
 
 class ImageSelFrame(tk.Frame):
     def __init__(self, master):
