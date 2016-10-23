@@ -88,18 +88,17 @@ def main(_):
   test_img, test_label = input_data_from_csv(test_csv)
   train_data_size = len(train_img)
 
-  # GPUを無効
-  with tf.Graph().as_default():
 
+  with tf.Graph().as_default():
     with tf.device('/gpu:0'):
       # Create the model
-      x = tf.placeholder(tf.float32, [None, image_size * image_size])
-      W = tf.Variable(tf.zeros([image_size * image_size, kana_num]))
-      b = tf.Variable(tf.zeros([kana_num]))
+      x = tf.placeholder(tf.float32, [None, image_size * image_size], name='image')
+      W = tf.Variable(tf.zeros([image_size * image_size, kana_num]), name='weight')
+      b = tf.Variable(tf.zeros([kana_num]), name='bias')
       y = tf.matmul(x, W) + b
 
     # Define loss and optimizer
-      y_ = tf.placeholder(tf.float32, [None, kana_num])
+      y_ = tf.placeholder(tf.float32, [None, kana_num], name='true_label')
 
     # The raw formulation of cross-entropy,
     #
@@ -118,6 +117,7 @@ def main(_):
     #tf.initialize_all_variables().run()
     # 変数の初期化
     sess = tf.InteractiveSession(config=tf.ConfigProto(log_device_placement=False))
+    train_write = tf.train.SummaryWriter('data/tarin', sess.graph)
     sess.run(tf.initialize_all_variables())
 
     for step in range(max_step):
@@ -127,15 +127,19 @@ def main(_):
           x: train_img[batch:batch + batch_size],
           y_: train_label[batch:batch + batch_size]})
 
- #    sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
 
       # Test trained model
       if step % 100 == 0:
         correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        # acc_summ = tf.scalar_summary('learning/Accuracy', accuracy)
         print('step=%d  :' % step, end="")
-        print(sess.run(accuracy, feed_dict={x: test_img,
-                                            y_: test_label}))
+        acc_summ = sess.run(accuracy, feed_dict={x: test_img,
+                                               y_: test_label})
+
+#        xent, acc, train_acc_summ = sess.run(accuracy, feed_dict={x: test_img,
+#                                            y_: test_label})
+        # train_write.add_summary(acc_summ, step)
 
     print('final')
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
@@ -150,4 +154,4 @@ if __name__ == '__main__':
   FLAGS = parser.parse_args()
   main('')
 
-  #tf.app.run()
+
