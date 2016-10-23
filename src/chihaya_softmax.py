@@ -117,7 +117,7 @@ def main(_):
     #tf.initialize_all_variables().run()
     # 変数の初期化
     sess = tf.InteractiveSession(config=tf.ConfigProto(log_device_placement=False))
-    train_write = tf.train.SummaryWriter('data/tarin', sess.graph)
+    train_writer = tf.train.SummaryWriter('data/tarin', sess.graph)
     sess.run(tf.initialize_all_variables())
 
     for step in range(max_step):
@@ -132,14 +132,13 @@ def main(_):
       if step % 100 == 0:
         correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-        # acc_summ = tf.scalar_summary('learning/Accuracy', accuracy)
+        acc_summ = tf.scalar_summary('learning/Accuracy', accuracy)
         print('step=%d  :' % step, end="")
-        acc_summ = sess.run(accuracy, feed_dict={x: test_img,
+        _, train_acc_summ = sess.run([accuracy, acc_summ], feed_dict={x: test_img,
                                                y_: test_label})
 
-#        xent, acc, train_acc_summ = sess.run(accuracy, feed_dict={x: test_img,
-#                                            y_: test_label})
-        # train_write.add_summary(acc_summ, step)
+        train_writer.add_summary(train_acc_summ, step)
+        print(accuracy)
 
     print('final')
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
