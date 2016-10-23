@@ -12,12 +12,12 @@ root = tk.Tk()
 root_mf = None
 
 
-def start():
+def start(logger):
     global root, root_mf
     root.title("DLEDITOR")
     menu()
     root.option_add('*font', 'FixedSys 12')
-    root_mf = MainFrame()
+    root_mf = MainFrame(logger, master=root)
     root_mf.pack()
 
     root.bind('<KeyPress-s>', root_mf.output_frame.save_key)
@@ -42,7 +42,7 @@ def menu():
 
 
 def open():
-    cdir = os.getcwd()
+    cdir = dledit.image_dir
     dirname = tk.filedialog.askopenfilename(initialdir=cdir, title=u'画像を一枚選択してください')
     image_dir = os.path.dirname(dirname)
     update_image_list(image_dir)
@@ -55,23 +55,23 @@ def update_image_list(image_dir):
 
 class MainFrame(tk.Frame):
     """ Frame with three label """
-    def __init__(self, master=root):
+    def __init__(self, logger, master=root):
         tk.Frame.__init__(self, master)
 
         # First Label
-        self.image_frame = ImageFrame(self)
+        self.image_frame = ImageFrame(self, logger)
         self.image_frame.grid(row=0,column=0)
 
-        self.label_frame = LabelFrame(self)
+        self.label_frame = LabelFrame(self, logger)
         self.label_frame.grid(row=0,column=1)
 
-        self.output_frame = OutputFrame(self)
+        self.output_frame = OutputFrame(self, logger)
         self.output_frame.grid(row=1,column=0)
 
 
 
 class ImageFrame(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, logger):
         tk.Frame.__init__(self, master)
         self.canvas_w = dledit.image_area_width
         self.canvas_h = dledit.image_area_height
@@ -88,6 +88,7 @@ class ImageFrame(tk.Frame):
 
         # 表示された画像の拡大率
         self.rate = 1.0
+
         self.sx = 0
         self.sy = 0
         self.ex = 0
@@ -98,10 +99,11 @@ class ImageFrame(tk.Frame):
 
         self.ondrag = False
         self.mouse_status = ""
+        self.log = logger
 
     def update_image(self):
         "画像更新時の処理"
-        dir = dledit.global_optiton.get('image_dir')
+        dir = dledit.image_dir
         file = dledit.ims.get_image_name()
         file_path = "%s/%s" % (dir, file)
         im, rate = image.create_zoom_im(file_path, self.canvas_w,  self.canvas_h)
@@ -109,7 +111,7 @@ class ImageFrame(tk.Frame):
         self.rate = rate
         self.canvas.create_image(0, 0, image=self.image1, anchor="nw")
 
-        dledit.log.write("update_image self.id = %s" % str(self.id))
+        self.log.write("update_image self.id = %s" % str(self.id))
         if self.id != None:
             self.canvas.delete(self.id)
             self.id = self.canvas.create_rectangle(self.sx, self.sy, self.ex, self.ey, outline='red', width=1)
@@ -140,26 +142,48 @@ class ImageFrame(tk.Frame):
 
     # マウスイベント
     def click(self, event):
-        self.ondrag = True
-        self.sx = event.x
-        self.sy = event.y
-        if self.id != None:
-            self.canvas.delete(self.id)
+        if dledit.fixed_sel_mode:
+            if self.id != None:
+                self.canvas.delete(self.id)
+            self.mx = event.x
+            self.my = event.y
+            sx, sy, ex, ey = self.calc_rectalge(event.x, event.y)
+            self.id = self.canvas.create_rectangle(sx, sy, ex, ey, outline='red', width=2)
+            self.sx = sx
+            self.sy = sy
+            self.ex = ex
+            self.ey = ey
+            self.update_selected_area_status()
+        else:
+            self.ondrag = True
+            self.sx = event.x
+            self.sy = event.y
+            if self.id != None:
+                self.canvas.delete(self.id)
+
 
     def move(self, event):
-        self.mx = event.x
-        self.my = event.y
+        if dledit.fixed_sel_mode:
+            if self.id != None:
+                self.canvas.delete(self.id)
+
+            self.sx, self.sy, self.ex, self.ey = self.calc_rectalge(event.x, event.y)
+            self.id = self.canvas.create_rectangle(self.sx, self.sy, self.ex, self.ey, outline='red', width=1)
+        else:
+            self.mx = event.x
+            self.my = event.y
         self.mouse_status_update()
 
     def motion(self, event):
         self.move(event)
-        if self.ondrag:
-            if self.id != None:
-                self.canvas.delete(self.id)
+        if not dledit.fixed_sel_mode:
+            if self.ondrag:
+                if self.id != None:
+                    self.canvas.delete(self.id)
 
-            self.ex = event.x
-            self.ey = event.y
-            self.id = self.canvas.create_rectangle(self.sx, self.sy, self.ex, self.ey, outline='red', width=1 )
+                self.ex = event.x
+                self.ey = event.y
+                self.id = self.canvas.create_rectangle(self.sx, self.sy, self.ex, self.ey, outline='red', width=1 )
 
     def release(self, event):
         if self.ondrag:
@@ -185,6 +209,12 @@ class ImageFrame(tk.Frame):
         self.mouse_status = str
         self.mouse_status_update()
 
+    def calc_rectalge(self, x, y):
+        sx = x - (dledit.fixed_sel_size / 2) * self.rate
+        sy = y - (dledit.fixed_sel_size / 2) * self.rate
+        ex = x + (dledit.fixed_sel_size / 2) * self.rate
+        ey = y + (dledit.fixed_sel_size / 2) * self.rate
+        return sx, sy, ex, ey
 
 class ImageSelFrame(tk.Frame):
     def __init__(self, master):
@@ -210,7 +240,7 @@ class ImageSelFrame(tk.Frame):
         self.master = master
 
     def update_status(self):
-        dir = dledit.global_optiton.get('image_dir')
+        dir = dledit.image_dir
         file = dledit.ims.get_image_name()
         index = dledit.ims.get_index()
         num = dledit.ims.get_image_num()
@@ -228,9 +258,11 @@ class ImageSelFrame(tk.Frame):
 
 
 class OutputFrame(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, logger):
         tk.Frame.__init__(self, master)
         im = PIL.Image.open('..\\img\\computer_folder.png')
+        self.log = logger
+
         self.master = master
         self.imb = PIL.ImageTk.PhotoImage(im)
 
@@ -244,7 +276,7 @@ class OutputFrame(tk.Frame):
         self.output_dir = "C:/ptech/DL/DLEDIT/output"
         self.entry = tk.Entry(self, width=60)
         self.entry.pack(side='left')
-        dledit.global_optiton.set('output_dir', self.output_dir)
+        dledit.output_dir, self.output_dir
 
         self.bset = tk.Button(self, text='SET', command=self.setdir)
         self.bset.pack(side='left')
@@ -265,7 +297,7 @@ class OutputFrame(tk.Frame):
         self.update_status()
 
     def update_status(self):
-        output_dir = dledit.global_optiton.get('output_dir')
+        output_dir = dledit.output_dir
         self.output_dir = output_dir
 
         self.entry.delete(0, tk.END)
@@ -306,8 +338,9 @@ class OutputFrame(tk.Frame):
         return x1, y1, x2, y2
 
 class LabelFrame(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, logger):
         tk.Frame.__init__(self, master)
+        self.log = logger
         self.t = tk.Label(self, text = "Label(未実装)", width = 30)
         self.t.pack()
 
