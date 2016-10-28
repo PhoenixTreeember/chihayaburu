@@ -42,6 +42,22 @@ image_size = 28
 kana_num = len(kana_list)
 batch_size = 100
 max_step = 1000
+# max_step = 100
+
+# 学習結果の保存関係
+# 保存に使うファイル名
+save_model_name = "model.ckpt"
+
+# Trueにすると学習結果を保存
+save_enable = False
+
+# Trueにすると学習結果を読み込む
+load_enable = True
+
+# Trueにすると学習をスキップ
+skip_study = True
+
+
 
 # 各自の環境に置き換えてください
 train_csv = '/media/natu/data/data/src/output/train.csv'
@@ -117,28 +133,42 @@ def main(_):
     #tf.initialize_all_variables().run()
     # 変数の初期化
     sess = tf.InteractiveSession(config=tf.ConfigProto(log_device_placement=False))
+    saver = tf.train.Saver()
     train_writer = tf.train.SummaryWriter('data/tarin', sess.graph)
-    sess.run(tf.initialize_all_variables())
 
-    for step in range(max_step):
-      for i in range(train_data_size//batch_size):    # //は切り捨て
-        batch = batch_size * i
-        sess.run(train_step, feed_dict={
-          x: train_img[batch:batch + batch_size],
-          y_: train_label[batch:batch + batch_size]})
+    if load_enable:
+      print('load model %s' % save_model_name)
+      saver.restore(sess, save_model_name)
+    else:
+      sess.run(tf.initialize_all_variables())
+
+    if not skip_study:
+      for step in range(max_step):
+        for i in range(train_data_size//batch_size):    # //は切り捨て
+          batch = batch_size * i
+          sess.run(train_step, feed_dict={
+            x: train_img[batch:batch + batch_size],
+            y_: train_label[batch:batch + batch_size]})
 
 
-      # Test trained model
-      if step % 100 == 0:
-        correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-        acc_summ = tf.scalar_summary('learning/Accuracy', accuracy)
-        print('step=%d  :' % step, end="")
-        _, train_acc_summ = sess.run([accuracy, acc_summ], feed_dict={x: test_img,
-                                               y_: test_label})
+        # Test trained model
+        if step % 100 == 0:
+          correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+          accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+          acc_summ = tf.scalar_summary('learning/Accuracy', accuracy)
+          print('step=%d  :' % step, end="")
+          _, train_acc_summ = sess.run([accuracy, acc_summ], feed_dict={x: test_img,
+                                                 y_: test_label})
 
-        train_writer.add_summary(train_acc_summ, step)
-        print(accuracy)
+          train_writer.add_summary(train_acc_summ, step)
+          print(accuracy)
+    else:
+      print('study skipped')
+
+    if save_enable:
+      print("saving %s" % save_model_name)
+      saver.save(sess, save_model_name)
+
 
     print('final')
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
