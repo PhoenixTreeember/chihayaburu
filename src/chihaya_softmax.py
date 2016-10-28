@@ -33,15 +33,16 @@ import numpy as np
 from PIL import Image
 from PIL import ImageOps
 
-FLAGS = None
+from analyze_tools import *
+
 
 # 夏谷追加
 kana_list = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'
 image_size = 28
 kana_num = len(kana_list)
 batch_size = 100
-max_step = 1000
-# max_step = 100
+# max_step = 1000
+max_step = 100
 
 # 学習結果の保存関係
 # 保存に使うファイル名
@@ -52,9 +53,11 @@ save_enable = False
 
 # Trueにすると学習結果を読み込む
 load_enable = True
+# load_enable = False
 
 # Trueにすると学習をスキップ
 skip_study = True
+# skip_study = False
 
 
 
@@ -172,8 +175,16 @@ def main(_):
     print('final')
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    print(sess.run(accuracy, feed_dict={x: test_img,
-                                        y_: test_label}))
+    y_true = tf.argmax(y_, 1)
+    y_pred = tf.argmax(y, 1)
+
+    acc, y_true, y_pred = sess.run([accuracy, y_true, y_pred], feed_dict={x: test_img, y_: test_label})
+    print(acc)
+#    print(y_true)
+#    print(y_pred)
+
+    # 上手く動かない時はここをコメントアウト
+    make_confusion_matrix(y_true, y_pred, kana_list)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
