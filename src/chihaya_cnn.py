@@ -42,7 +42,8 @@ image_size = 28
 kana_num = len(kana_list)
 batch_size = 100
 # max_step = 1000
-max_step = 100
+max_step = 200
+learning_rate =  1e-4
 
 # 学習結果の保存関係
 # 保存に使うファイル名
@@ -84,8 +85,10 @@ def input_data_from_csv(file):
 
     # 画像ファイルを開き、モノクロ化、リサイズ
     img_ori = Image.open(img_name)
+    img_rgb = img_ori.convert('RGB')
     img_gray = ImageOps.grayscale(img_ori)
     img_resized = img_gray.resize((image_size,image_size))
+#    img_resized = img_rgb.resize((image_size,image_size))
 
     # imageををnumpyに変更して、imagesに追加
     img_ary = np.asarray(img_resized)
@@ -99,6 +102,134 @@ def input_data_from_csv(file):
   return images, labels
 
 
+def inference(images_placeholder, keep_prob):
+  """ 予測モデルを作成する関数
+
+  引数:
+    images_placeholder: 画像のplaceholder
+    keep_prob: dropout率のplaceholder
+
+  返り値:
+    y_conv: 各クラスの確率(のようなもの)
+  """
+
+  # 重みを標準偏差0.1の正規分布で初期化
+  def weight_variable(shape):
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    return tf.Variable(initial)
+
+  # バイアスを標準偏差0.1の正規分布で初期化
+  def bias_variable(shape):
+    initial = tf.constant(0.1, shape=shape)
+    return tf.Variable(initial)
+
+  # 畳み込み層の作成
+  def conv2d(x, W):
+    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+
+  # プーリング層の作成
+  def max_pool_2x2(x):
+    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
+                          strides=[1, 2, 2, 1], padding='SAME')
+
+  # 入力を28x28x3に変形
+#  x_image = tf.reshape(images_placeholder, [-1, 28, 28, 3])
+  x_image = tf.reshape(images_placeholder, [-1, 28, 28, 1])
+
+  # 畳み込み層1の作成
+  with tf.name_scope('conv1') as scope:
+#    W_conv1 = weight_variable([5, 5, 3, 32])
+    W_conv1 = weight_variable([5, 5, 1, 32])
+
+    b_conv1 = bias_variable([32])
+    h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+
+  # プーリング層1の作成
+  with tf.name_scope('pool1') as scope:
+    h_pool1 = max_pool_2x2(h_conv1)
+
+  # 畳み込み層2の作成
+  with tf.name_scope('conv2') as scope:
+    W_conv2 = weight_variable([5, 5, 32, 64])
+    b_conv2 = bias_variable([64])
+    h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
+
+  # プーリング層2の作成
+  with tf.name_scope('pool2') as scope:
+    h_pool2 = max_pool_2x2(h_conv2)
+
+  # 全結合層1の作成
+  with tf.name_scope('fc1') as scope:
+    W_fc1 = weight_variable([7 * 7 * 64, 1024])
+    b_fc1 = bias_variable([1024])
+    h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
+    h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
+    # dropoutの設定
+    h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
+
+  # 全結合層2の作成
+  with tf.name_scope('fc2') as scope:
+    W_fc2 = weight_variable([1024, kana_num])
+    b_fc2 = bias_variable([kana_num])
+
+  # ソフトマックス関数による正規化
+  with tf.name_scope('softmax') as scope:
+    y_conv = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
+
+  # 各ラベルの確率のようなものを返す
+  return y_conv
+
+def loss(logits, labels):
+  """ lossを計算する関数
+
+  引数:
+    logits: ロジットのtensor, float - [batch_size, NUM_CLASSES]
+    labels: ラベルのtensor, int32 - [batch_size, NUM_CLASSES]
+
+  返り値:
+    cross_entropy: 交差エントロピーのtensor, float
+
+  """
+
+  # 交差エントロピーの計算
+  cross_entropy = -tf.reduce_sum(labels * tf.log(logits))
+  # TensorBoardで表示するよう指定
+  tf.scalar_summary("cross_entropy", cross_entropy)
+  return cross_entropy
+
+
+def training(loss, learning_rate):
+  """ 訓練のopを定義する関数
+  引数:
+    loss: 損失のtensor, loss()の結果
+    learning_rate: 学習係数
+
+  返り値:
+    train_step: 訓練のop
+
+  """
+
+  train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+  return train_step
+
+
+def accuracy(logits, labels):
+  """ 正解率(accuracy)を計算する関数
+
+  引数:
+    logits: inference()の結果
+    labels: ラベルのtensor, int32 - [batch_size, NUM_CLASSES]
+
+  返り値:
+    accuracy: 正解率(float)
+
+  """
+  correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(labels, 1))
+  accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+  tf.scalar_summary("accuracy", accuracy)
+  return accuracy
+
+
 def main(_):
   # mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
   #  2つのcsvファイルから画像データとラベルの配列を読み込む
@@ -110,33 +241,91 @@ def main(_):
   with tf.Graph().as_default():
     with tf.device('/gpu:0'):
       # Create the model
-      x = tf.placeholder(tf.float32, [None, image_size * image_size], name='image')
-      W = tf.Variable(tf.zeros([image_size * image_size, kana_num]), name='weight')
-      b = tf.Variable(tf.zeros([kana_num]), name='bias')
-      y = tf.matmul(x, W) + b
+      # https://www.tensorflow.org/versions/0.6.0/tutorials/mnist/pros/index.html
 
-    # Define loss and optimizer
-      y_ = tf.placeholder(tf.float32, [None, kana_num], name='true_label')
+      # 画像を入れる仮のTensor
+      images_placeholder = tf.placeholder("float", shape=(None, image_size * image_size))
+      # ラベルを入れる仮のTensor
+      labels_placeholder = tf.placeholder("float", shape=(None, kana_num))
+      # dropout率を入れる仮のTensor
+      keep_prob = tf.placeholder("float")
 
-    # The raw formulation of cross-entropy,
-    #
-    #   tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(tf.softmax(y)),
-    #                                 reduction_indices=[1]))
-    #
-    # can be numerically unstable.
-    #
-    # So here we use tf.nn.softmax_cross_entropy_with_logits on the raw
-    # outputs of 'y', and then average across the batch.
-      cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
-      train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+      # inference()を呼び出してモデルを作る
+      logits = inference(images_placeholder, keep_prob)
+      # loss()を呼び出して損失を計算
+      loss_value = loss(logits, labels_placeholder)
+      # training()を呼び出して訓練
+      train_op = training(loss_value, learning_rate)
+      # 精度の計算
+      acc = accuracy(logits, labels_placeholder)
 
-    #sess = tf.InteractiveSession()
-    # Train
-    #tf.initialize_all_variables().run()
-    # 変数の初期化
-    sess = tf.InteractiveSession(config=tf.ConfigProto(log_device_placement=False))
-    saver = tf.train.Saver()
-    train_writer = tf.train.SummaryWriter('data/tarin', sess.graph)
+      # 保存の準備
+      saver = tf.train.Saver()
+      # Sessionの作成
+      sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+      # 変数の初期化
+      sess.run(tf.initialize_all_variables())
+      # TensorBoardで表示する値の設定
+      summary_op = tf.merge_all_summaries()
+      summary_writer = tf.train.SummaryWriter('data/tarin', sess.graph_def)
+
+      # 訓練の実行
+      for step in range(max_step):
+        for i in range(len(train_img) // batch_size):
+          # batch_size分の画像に対して訓練の実行
+          batch = batch_size * i
+          # feed_dictでplaceholderに入れるデータを指定する
+          sess.run(train_op, feed_dict={
+            images_placeholder: train_img[batch:batch + batch_size],
+            labels_placeholder: train_label[batch:batch + batch_size],
+            keep_prob: 0.5})
+
+        # 1 step終わるたびに精度を計算する
+        train_accuracy = sess.run(acc, feed_dict={
+          images_placeholder: train_img,
+          labels_placeholder: train_label,
+          keep_prob: 1.0})
+        # print("step %d, training accuracy %g" % (step, train_accuracy))
+        test_accrracy = sess.run(acc, feed_dict={
+          images_placeholder: test_img,
+          labels_placeholder: test_label,
+          keep_prob: 1.0})
+
+        print("step %d, training accuracy %g, test accuracy %g" % (step, train_accuracy, test_accrracy))
+
+
+        # 1 step終わるたびにTensorBoardに表示する値を追加する
+        summary_str = sess.run(summary_op, feed_dict={
+          images_placeholder: train_img,
+          labels_placeholder: train_label,
+          keep_prob: 1.0})
+        summary_writer.add_summary(summary_str, step)
+
+        # 訓練が終了したらテストデータに対する精度を表示
+    # 1 step終わるたびに精度を計算する
+    train_accuracy = sess.run(acc, feed_dict={
+      images_placeholder: train_img,
+      labels_placeholder: train_label,
+      keep_prob: 1.0})
+    # print("step %d, training accuracy %g" % (step, train_accuracy))
+    test_accrracy = sess.run(acc, feed_dict={
+      images_placeholder: test_img,
+      labels_placeholder: test_label,
+      keep_prob: 1.0})
+
+    print("FINAL, training accuracy %g, test accuracy %g" % (train_accuracy, test_accrracy))
+
+#    print("test accuracy %g" % sess.run(acc, feed_dict={
+#      images_placeholder: test_img,
+#      labels_placeholder: test_label,
+#      keep_prob: 1.0}))
+
+    # 最終的なモデルを保存
+    save_path = saver.save(sess, save_model_name)
+
+"""
+      x_image = tf.reshape(images_placeholder, [-1, 28, 28, 3])
+
 
     if load_enable:
       print('load model %s' % save_model_name)
@@ -185,6 +374,9 @@ def main(_):
 
     # 上手く動かない時はここをコメントアウト
     make_confusion_matrix(y_true, y_pred, kana_list)
+
+"""
+
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()

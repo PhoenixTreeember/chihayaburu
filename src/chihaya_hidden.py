@@ -136,7 +136,7 @@ def main(_):
     # So here we use tf.nn.softmax_cross_entropy_with_logits on the raw
     # outputs of 'y', and then average across the batch.
       cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(u, y_)) # なんでu?
-      train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+      train_step = tf.train.GradientDescentOptimizer(0.3).minimize(cross_entropy)
 
     #sess = tf.InteractiveSession()
     # Train
@@ -190,7 +190,7 @@ def main(_):
     print(acc)
 
     # 上手く動かない時はここをコメントアウト
-    make_confusion_matrix(y_true, y_pred, kana_list)
+    make_confusion_matrix(y_true, y_pred, kana_list, image_name= 'confusion_matrix_hidden.png')
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
