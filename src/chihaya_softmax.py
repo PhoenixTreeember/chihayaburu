@@ -28,6 +28,7 @@ import argparse
 from tensorflow.examples.tutorials.mnist import input_data
 
 import tensorflow as tf
+from tensorflow.python.framework import graph_util
 import sys
 import numpy as np
 from PIL import Image
@@ -42,22 +43,22 @@ image_size = 28
 kana_num = len(kana_list)
 batch_size = 100
 # max_step = 1000
-max_step = 100
+max_step = 1000
 
 # 学習結果の保存関係
 # 保存に使うファイル名
 save_model_name = "model.ckpt"
 
 # Trueにすると学習結果を保存
-save_enable = False
+save_enable = True
 
 # Trueにすると学習結果を読み込む
 load_enable = True
-# load_enable = False
+#load_enable = False
 
 # Trueにすると学習をスキップ
 skip_study = True
-# skip_study = False
+#skip_study = False
 
 
 
@@ -89,7 +90,9 @@ def input_data_from_csv(file):
 
     # imageををnumpyに変更して、imagesに追加
     img_ary = np.asarray(img_resized)
-    images.append(img_ary.flatten().astype(np.float32) / 255.0)
+    # neg pos 反転
+    img_ary_inv = 255 - img_ary
+    images.append(img_ary_inv.flatten().astype(np.float32) / 255.0)
 
     # ラベルの追加
     label_array = np.zeros(kana_num)
@@ -107,7 +110,7 @@ def main(_):
   train_data_size = len(train_img)
 
 
-  with tf.Graph().as_default():
+  with tf.Graph().as_default() as graph:
     with tf.device('/gpu:0'):
       # Create the model
       x = tf.placeholder(tf.float32, [None, image_size * image_size], name='image')
@@ -178,8 +181,38 @@ def main(_):
     y_true = tf.argmax(y_, 1)
     y_pred = tf.argmax(y, 1)
 
-    acc, y_true, y_pred = sess.run([accuracy, y_true, y_pred], feed_dict={x: test_img, y_: test_label})
+    acc, y_true, y_pred, W, b = sess.run([accuracy, y_true, y_pred, W, b], feed_dict={x: test_img, y_: test_label})
     print(acc)
+
+    np.savetxt('W.csv', W, delimiter=',')
+    np.savetxt('b.csv', b, delimiter=',')
+
+    i = 0
+    for Wn in W.T:
+      img = Image.new('RGB', (28,28))
+      for y in range(28):
+        for x in range(28):
+          v = Wn[y*28+x]
+          v16 = int(v*500)
+          if v < 0:
+            col = (v16, 0 ,0)
+          else:
+            col = (v16, v16, v16)
+          img.putpixel((x,y), col)
+      imgx8 = img.resize((28*8, 28*8))
+#      img.save('weight/w_' + str(i) + '.png')
+#      imgx8.save('weight/w4_' + str(i) + '.png')
+
+      i+=1
+
+
+
+    graph_def = graph_util.convert_variables_to_constants(
+      sess, graph.as_graph_def(), ['true_label', 'weight', 'bias'])  # 出力層の名前を指定
+
+    tf.train.write_graph(graph_def, '.',
+                         'graph.pb.txt', as_text=True)
+
 #    print(y_true)
 #    print(y_pred)
 
