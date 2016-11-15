@@ -39,6 +39,7 @@ kana_num = len(kana_list)
 
 # コンフィグデータ取得
 batch_size = config.batch_size
+max_step = config.max_step
 save_enable = config.save_enable
 load_enable = config.load_enable
 skip_study = config.skip_study
