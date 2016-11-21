@@ -53,12 +53,10 @@ save_model_name = "model_cnn.ckpt"
 save_enable = False
 
 # Trueにすると学習結果を読み込む
-#load_enable = True
-load_enable = False
+load_enable = True
 
 # Trueにすると学習をスキップ
-#skip_study = True
-skip_study = False
+skip_study = True
 
 
 
@@ -92,7 +90,9 @@ def input_data_from_csv(file):
 
     # imageををnumpyに変更して、imagesに追加
     img_ary = np.asarray(img_resized)
-    images.append(img_ary.flatten().astype(np.float32) / 255.0)
+    # neg pos 反転
+    img_ary_inv = 255 - img_ary
+    images.append(img_ary_inv.flatten().astype(np.float32) / 255.0)
 
     # ラベルの追加
     label_array = np.zeros(kana_num)
@@ -252,6 +252,7 @@ def main(_):
 
       # inference()を呼び出してモデルを作る
       logits = inference(images_placeholder, keep_prob)
+
       # loss()を呼び出して損失を計算
       loss_value = loss(logits, labels_placeholder)
       # training()を呼び出して訓練
@@ -264,50 +265,61 @@ def main(_):
       # Sessionの作成
       sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
       # 変数の初期化
-      sess.run(tf.initialize_all_variables())
+      if load_enable:
+        print('load model %s' % save_model_name)
+        saver.restore(sess, save_model_name)
+      else:
+        sess.run(tf.initialize_all_variables())
+
       # TensorBoardで表示する値の設定
       summary_op = tf.merge_all_summaries()
       summary_writer = tf.train.SummaryWriter('data/tarin', sess.graph_def)
 
       # 訓練の実行
-      for step in range(max_step):
-        for i in range(len(train_img) // batch_size):
-          # batch_size分の画像に対して訓練の実行
-          batch = batch_size * i
-          # feed_dictでplaceholderに入れるデータを指定する
-          sess.run(train_op, feed_dict={
-            images_placeholder: train_img[batch:batch + batch_size],
-            labels_placeholder: train_label[batch:batch + batch_size],
-            keep_prob: 0.5})
+      if not skip_study:
+        for step in range(max_step):
+          for i in range(len(train_img) // batch_size):
+            # batch_size分の画像に対して訓練の実行
+            batch = batch_size * i
+            # feed_dictでplaceholderに入れるデータを指定する
+            sess.run(train_op, feed_dict={
+              images_placeholder: train_img[batch:batch + batch_size],
+              labels_placeholder: train_label[batch:batch + batch_size],
+              keep_prob: 0.5})
 
-        # 1 step終わるたびに精度を計算する
-        train_accuracy = sess.run(acc, feed_dict={
-          images_placeholder: train_img,
-          labels_placeholder: train_label,
-          keep_prob: 1.0})
-        # print("step %d, training accuracy %g" % (step, train_accuracy))
-        test_accrracy = sess.run(acc, feed_dict={
-          images_placeholder: test_img,
-          labels_placeholder: test_label,
-          keep_prob: 1.0})
+          # 1 step終わるたびに精度を計算する
+          train_accuracy = sess.run(acc, feed_dict={
+            images_placeholder: train_img,
+            labels_placeholder: train_label,
+            keep_prob: 1.0})
+          # print("step %d, training accuracy %g" % (step, train_accuracy))
+          test_accrracy = sess.run(acc, feed_dict={
+            images_placeholder: test_img,
+            labels_placeholder: test_label,
+            keep_prob: 1.0})
 
-        print("step %d, training accuracy %g, test accuracy %g" % (step, train_accuracy, test_accrracy))
+          print("step %d, training accuracy %g, test accuracy %g" % (step, train_accuracy, test_accrracy))
 
 
-        # 1 step終わるたびにTensorBoardに表示する値を追加する
-        summary_str = sess.run(summary_op, feed_dict={
-          images_placeholder: train_img,
-          labels_placeholder: train_label,
-          keep_prob: 1.0})
-        summary_writer.add_summary(summary_str, step)
+          # 1 step終わるたびにTensorBoardに表示する値を追加する
+          summary_str = sess.run(summary_op, feed_dict={
+            images_placeholder: train_img,
+            labels_placeholder: train_label,
+            keep_prob: 1.0})
+          summary_writer.add_summary(summary_str, step)
+      else:
+        print('study skipped')
 
-        # 訓練が終了したらテストデータに対する精度を表示
-    # 1 step終わるたびに精度を計算する
+    if save_enable:
+      print("saving %s" % save_model_name)
+      saver.save(sess, save_model_name)
+
+
+          # 訓練が終了したらテストデータに対する精度を表示
     train_accuracy = sess.run(acc, feed_dict={
       images_placeholder: train_img,
       labels_placeholder: train_label,
       keep_prob: 1.0})
-    # print("step %d, training accuracy %g" % (step, train_accuracy))
     test_accrracy = sess.run(acc, feed_dict={
       images_placeholder: test_img,
       labels_placeholder: test_label,
@@ -315,67 +327,7 @@ def main(_):
 
     print("FINAL, training accuracy %g, test accuracy %g" % (train_accuracy, test_accrracy))
 
-#    print("test accuracy %g" % sess.run(acc, feed_dict={
-#      images_placeholder: test_img,
-#      labels_placeholder: test_label,
-#      keep_prob: 1.0}))
 
-    # 最終的なモデルを保存
-    save_path = saver.save(sess, save_model_name)
-
-"""
-      x_image = tf.reshape(images_placeholder, [-1, 28, 28, 3])
-
-
-    if load_enable:
-      print('load model %s' % save_model_name)
-      saver.restore(sess, save_model_name)
-    else:
-      sess.run(tf.initialize_all_variables())
-
-    if not skip_study:
-      for step in range(max_step):
-        for i in range(train_data_size//batch_size):    # //は切り捨て
-          batch = batch_size * i
-          sess.run(train_step, feed_dict={
-            x: train_img[batch:batch + batch_size],
-            y_: train_label[batch:batch + batch_size]})
-
-
-        # Test trained model
-        if step % 100 == 0:
-          correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-          accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-          acc_summ = tf.scalar_summary('learning/Accuracy', accuracy)
-          print('step=%d  :' % step, end="")
-          _, train_acc_summ = sess.run([accuracy, acc_summ], feed_dict={x: test_img,
-                                                 y_: test_label})
-
-          train_writer.add_summary(train_acc_summ, step)
-          print(accuracy)
-    else:
-      print('study skipped')
-
-    if save_enable:
-      print("saving %s" % save_model_name)
-      saver.save(sess, save_model_name)
-
-
-    print('final')
-    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    y_true = tf.argmax(y_, 1)
-    y_pred = tf.argmax(y, 1)
-
-    acc, y_true, y_pred = sess.run([accuracy, y_true, y_pred], feed_dict={x: test_img, y_: test_label})
-    print(acc)
-#    print(y_true)
-#    print(y_pred)
-
-    # 上手く動かない時はここをコメントアウト
-    make_confusion_matrix(y_true, y_pred, kana_list)
-
-"""
 
 
 if __name__ == '__main__':
