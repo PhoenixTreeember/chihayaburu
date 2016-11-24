@@ -79,7 +79,7 @@ class ImageFrame(tk.Frame):
         self.canvas = tk.Canvas(self, width = self.canvas_w, height = self.canvas_h)
         self.canvas.pack()
 
-        im = PIL.Image.open('..\\img\\computer_jinkou_chinou.png')
+        im = PIL.Image.open('../img/computer_jinkou_chinou.png')
         self.image1 = PIL.ImageTk.PhotoImage(im)
         self.canvas.create_image(0, 0, image = self.image1, anchor="nw")
 

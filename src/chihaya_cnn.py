@@ -50,13 +50,13 @@ learning_rate =  1e-4
 save_model_name = "model_cnn.ckpt"
 
 # Trueにすると学習結果を保存
-save_enable = False
+save_enable = True
 
 # Trueにすると学習結果を読み込む
-load_enable = True
+load_enable = False
 
 # Trueにすると学習をスキップ
-skip_study = True
+skip_study = False
 
 
 
@@ -64,6 +64,24 @@ skip_study = True
 train_csv = '/media/natu/data/data/src/output/train.csv'
 test_csv = '/media/natu/data/data/src/output/test.csv'
 
+# 学習結果出力用にグローバル変数へ
+W_conv1 = None
+b_conv1 = None
+h_conv1 = None
+
+W_conv2 = None
+b_conv2 = None
+h_conv2 = None
+
+W_fc1 = None
+b_fc1 = None
+h_pool2_flat = None
+h_fc1 = None
+
+W_fc2 = None
+b_fc2 = None
+
+fc_size = 128
 
 def input_data_from_csv(file):
   """
@@ -112,6 +130,10 @@ def inference(images_placeholder, keep_prob):
   返り値:
     y_conv: 各クラスの確率(のようなもの)
   """
+  global W_conv1, b_conv1, h_conv1
+  global W_conv2, b_conv2, h_conv2
+  global W_fc1, b_fc1, h_pool2_flat, h_fc1
+  global W_fc2, b_fc2
 
   # 重みを標準偏差0.1の正規分布で初期化
   def weight_variable(shape):
@@ -160,8 +182,8 @@ def inference(images_placeholder, keep_prob):
 
   # 全結合層1の作成
   with tf.name_scope('fc1') as scope:
-    W_fc1 = weight_variable([7 * 7 * 64, 1024])
-    b_fc1 = bias_variable([1024])
+    W_fc1 = weight_variable([7 * 7 * 64, fc_size])
+    b_fc1 = bias_variable([fc_size])
     h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
     h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
     # dropoutの設定
@@ -169,7 +191,7 @@ def inference(images_placeholder, keep_prob):
 
   # 全結合層2の作成
   with tf.name_scope('fc2') as scope:
-    W_fc2 = weight_variable([1024, kana_num])
+    W_fc2 = weight_variable([fc_size, kana_num])
     b_fc2 = bias_variable([kana_num])
 
   # ソフトマックス関数による正規化
@@ -320,10 +342,41 @@ def main(_):
       images_placeholder: train_img,
       labels_placeholder: train_label,
       keep_prob: 1.0})
+
     test_accrracy = sess.run(acc, feed_dict={
       images_placeholder: test_img,
       labels_placeholder: test_label,
       keep_prob: 1.0})
+
+    wc1 = W_conv1.eval(session=sess)
+    bc1 = b_conv1.eval(session=sess)
+#    hc1 = h_conv1.eval(session=sess)
+
+    wc2 = W_conv2.eval(session=sess)
+    bc2 = b_conv2.eval(session=sess)
+#    hc2 = h_conv2.eval(session=sess)
+
+    wfc1 = W_fc1.eval(session=sess)
+    bfc1 = b_fc1.eval(session=sess)
+#    hp2 = h_pool2_flat.eval(session=sess)
+#    hfc1 = h_fc1.eval(session=sess)
+
+    wfc2 = W_fc2.eval(session=sess)
+    bfc2 = b_fc2.eval(session=sess)
+
+    np.save('wc1.npy', wc1)
+    np.save('bc1.npy', bc1)
+
+    np.save('wc2.npy', wc2)
+    np.save('bc2.npy', bc2)
+
+    np.save('wfc1.npy', wfc1)
+    np.save('bfc1.npy', bfc1)
+
+    np.save('wfc2.npy', wfc2)
+    np.save('bfc2.npy', bfc2)
+
+
 
     print("FINAL, training accuracy %g, test accuracy %g" % (train_accuracy, test_accrracy))
 

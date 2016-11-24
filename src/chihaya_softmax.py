@@ -50,7 +50,7 @@ max_step = 1000
 save_model_name = "model.ckpt"
 
 # Trueにすると学習結果を保存
-save_enable = True
+save_enable = False
 
 # Trueにすると学習結果を読み込む
 load_enable = True
@@ -193,15 +193,16 @@ def main(_):
       for y in range(28):
         for x in range(28):
           v = Wn[y*28+x]
-          v16 = int(v*500)
+          v16 = min([int(v*500), 255])
+
           if v < 0:
-            col = (v16, 0 ,0)
+            col = (-v16 // 2, -v16 // 8, -v16 // 8)
           else:
-            col = (v16, v16, v16)
+            col = (0, 0, v16)
           img.putpixel((x,y), col)
       imgx8 = img.resize((28*8, 28*8))
-#      img.save('weight/w_' + str(i) + '.png')
-#      imgx8.save('weight/w4_' + str(i) + '.png')
+      img.save('weight/w_' + str(i) + '.png')
+      imgx8.save('weight/w4_' + str(i) + '.png')
 
       i+=1
 
