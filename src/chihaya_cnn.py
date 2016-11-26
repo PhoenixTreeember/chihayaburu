@@ -81,7 +81,7 @@ h_fc1 = None
 W_fc2 = None
 b_fc2 = None
 
-fc_size = 128
+fc_size = 1024
 
 def input_data_from_csv(file):
   """
@@ -108,7 +108,7 @@ def input_data_from_csv(file):
 
     # imageををnumpyに変更して、imagesに追加
     img_ary = np.asarray(img_resized)
-    # neg pos 反転
+    # neg pos 反転import argparse
     img_ary_inv = 255 - img_ary
     images.append(img_ary_inv.flatten().astype(np.float32) / 255.0)
 
@@ -261,8 +261,9 @@ def main(_):
 
 
   with tf.Graph().as_default():
-    with tf.device('/gpu:0'):
-      # Create the model
+#    with tf.device('/gpu:0'):
+    with tf.device('/cpu:0'):
+  # Create the model
       # https://www.tensorflow.org/versions/0.6.0/tutorials/mnist/pros/index.html
 
       # 画像を入れる仮のTensor

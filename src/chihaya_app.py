@@ -14,7 +14,7 @@ kana_num = len(kana_list)
 
 save_model_name = "model.ckpt"
 
-img_name = "/media/natu/data/data/src/output/test/3/ARIALUNI.TTF_00.png"
+img_name = "/media/natu/data/data/src/output/test/1/ARIALUNI.TTF_00.png"
 
 
 
@@ -73,8 +73,10 @@ def main(_):
 
 #    y_pred = tf.argmax(y, 1)
 
-    ret = sess.run([y, y_], feed_dict={x: img, y_:labels})
-    print(ret[0])
+    ret = sess.run(y, feed_dict={x: img, y_:labels})
+    i = np.argmax(ret)
+
+    print(kana_list[i])
 
 if __name__ == '__main__':
   global img_name
