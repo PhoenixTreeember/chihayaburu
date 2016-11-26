@@ -1,6 +1,7 @@
 import struct
 from PIL import Image
 
+sz_record = 0
 
 def read_record_ETL8G(f):
   s = f.read(8199)
@@ -10,14 +11,15 @@ def read_record_ETL8G(f):
   return r + (iL,)
 
 
-filename = 'ETL8G/ETL8G_01'
+filename = '/media/natu/data/data/sansou/ETL8G/ETL8G_01'
 id_record = 0
 
-with open(filename, 'r') as f:
+with open(filename, 'rb') as f:
   f.seek(id_record * sz_record)
   r = read_record_ETL8G(f)
 
-print r[0:-2], hex(r[1])
+print(r[0:-2])
+print(hex(r[1]))
 iE = Image.eval(r[-1], lambda x: 255 - x * 16)
 fn = 'ETL8G_{:d}_{:s}.png'.format((r[0] - 1) % 20 + 1, hex(r[1])[-4:])
 iE.save(fn, 'PNG')
