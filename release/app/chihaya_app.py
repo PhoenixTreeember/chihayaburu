@@ -1,12 +1,9 @@
 import tensorflow as tf
-from tensorflow.python.framework import graph_util
 import sys
-import argparse
 import numpy as np
 from PIL import Image
 from PIL import ImageOps
 
-from analyze_tools import *
 
 kana_list = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'
 image_size = 28
