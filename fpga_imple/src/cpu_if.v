@@ -60,7 +60,7 @@ module cpu_if
    input [31:0]      RESULT_42,
    input [31:0]      RESULT_43,
    input [31:0]      RESULT_44,
-   input [31:0]      RESULT_45,
+   input [31:0]      RESULT_45
    );
 
 
