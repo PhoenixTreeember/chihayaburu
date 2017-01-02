@@ -63,11 +63,10 @@ module cpu_if
    input [31:0]      RESULT_45
    );
 
-
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[0] <= 0;
-      end if (CPU_ADR[17:12] == 6'h00)begin
+      end else if (CPU_ADR[17:12] == 6'h00)begin
 	 SRAM_SEL[0] <= 1;
       end else begin
 	 SRAM_SEL[0] <= 0;
@@ -77,7 +76,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[1] <= 0;
-      end if (CPU_ADR[17:12] == 6'h01)begin
+      end else if (CPU_ADR[17:12] == 6'h01)begin
 	 SRAM_SEL[1] <= 1;
       end else begin
 	 SRAM_SEL[1] <= 0;
@@ -87,7 +86,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[2] <= 0;
-      end if (CPU_ADR[17:12] == 6'h02)begin
+      end else if (CPU_ADR[17:12] == 6'h02)begin
 	 SRAM_SEL[2] <= 1;
       end else begin
 	 SRAM_SEL[2] <= 0;
@@ -97,7 +96,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[3] <= 0;
-      end if (CPU_ADR[17:12] == 6'h03)begin
+      end else if (CPU_ADR[17:12] == 6'h03)begin
 	 SRAM_SEL[3] <= 1;
       end else begin
 	 SRAM_SEL[3] <= 0;
@@ -107,7 +106,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[4] <= 0;
-      end if (CPU_ADR[17:12] == 6'h04)begin
+      end else if (CPU_ADR[17:12] == 6'h04)begin
 	 SRAM_SEL[4] <= 1;
       end else begin
 	 SRAM_SEL[4] <= 0;
@@ -117,7 +116,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[5] <= 0;
-      end if (CPU_ADR[17:12] == 6'h05)begin
+      end else if (CPU_ADR[17:12] == 6'h05)begin
 	 SRAM_SEL[5] <= 1;
       end else begin
 	 SRAM_SEL[5] <= 0;
@@ -127,7 +126,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[6] <= 0;
-      end if (CPU_ADR[17:12] == 6'h06)begin
+      end else if (CPU_ADR[17:12] == 6'h06)begin
 	 SRAM_SEL[6] <= 1;
       end else begin
 	 SRAM_SEL[6] <= 0;
@@ -137,7 +136,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[7] <= 0;
-      end if (CPU_ADR[17:12] == 6'h07)begin
+      end else if (CPU_ADR[17:12] == 6'h07)begin
 	 SRAM_SEL[7] <= 1;
       end else begin
 	 SRAM_SEL[7] <= 0;
@@ -147,7 +146,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[8] <= 0;
-      end if (CPU_ADR[17:12] == 6'h08)begin
+      end else if (CPU_ADR[17:12] == 6'h08)begin
 	 SRAM_SEL[8] <= 1;
       end else begin
 	 SRAM_SEL[8] <= 0;
@@ -157,7 +156,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[9] <= 0;
-      end if (CPU_ADR[17:12] == 6'h09)begin
+      end else if (CPU_ADR[17:12] == 6'h09)begin
 	 SRAM_SEL[9] <= 1;
       end else begin
 	 SRAM_SEL[9] <= 0;
@@ -167,7 +166,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[10] <= 0;
-      end if (CPU_ADR[17:12] == 6'h0a)begin
+      end else if (CPU_ADR[17:12] == 6'h0a)begin
 	 SRAM_SEL[10] <= 1;
       end else begin
 	 SRAM_SEL[10] <= 0;
@@ -177,7 +176,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[11] <= 0;
-      end if (CPU_ADR[17:12] == 6'h0b)begin
+      end else if (CPU_ADR[17:12] == 6'h0b)begin
 	 SRAM_SEL[11] <= 1;
       end else begin
 	 SRAM_SEL[11] <= 0;
@@ -187,7 +186,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[12] <= 0;
-      end if (CPU_ADR[17:12] == 6'h0c)begin
+      end else if (CPU_ADR[17:12] == 6'h0c)begin
 	 SRAM_SEL[12] <= 1;
       end else begin
 	 SRAM_SEL[12] <= 0;
@@ -197,7 +196,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[13] <= 0;
-      end if (CPU_ADR[17:12] == 6'h0d)begin
+      end else if (CPU_ADR[17:12] == 6'h0d)begin
 	 SRAM_SEL[13] <= 1;
       end else begin
 	 SRAM_SEL[13] <= 0;
@@ -207,7 +206,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[14] <= 0;
-      end if (CPU_ADR[17:12] == 6'h0e)begin
+      end else if (CPU_ADR[17:12] == 6'h0e)begin
 	 SRAM_SEL[14] <= 1;
       end else begin
 	 SRAM_SEL[14] <= 0;
@@ -217,7 +216,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[15] <= 0;
-      end if (CPU_ADR[17:12] == 6'h0f)begin
+      end else if (CPU_ADR[17:12] == 6'h0f)begin
 	 SRAM_SEL[15] <= 1;
       end else begin
 	 SRAM_SEL[15] <= 0;
@@ -227,7 +226,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[16] <= 0;
-      end if (CPU_ADR[17:12] == 6'h10)begin
+      end else if (CPU_ADR[17:12] == 6'h10)begin
 	 SRAM_SEL[16] <= 1;
       end else begin
 	 SRAM_SEL[16] <= 0;
@@ -237,7 +236,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[17] <= 0;
-      end if (CPU_ADR[17:12] == 6'h11)begin
+      end else if (CPU_ADR[17:12] == 6'h11)begin
 	 SRAM_SEL[17] <= 1;
       end else begin
 	 SRAM_SEL[17] <= 0;
@@ -247,7 +246,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[18] <= 0;
-      end if (CPU_ADR[17:12] == 6'h12)begin
+      end else if (CPU_ADR[17:12] == 6'h12)begin
 	 SRAM_SEL[18] <= 1;
       end else begin
 	 SRAM_SEL[18] <= 0;
@@ -257,7 +256,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[19] <= 0;
-      end if (CPU_ADR[17:12] == 6'h13)begin
+      end else if (CPU_ADR[17:12] == 6'h13)begin
 	 SRAM_SEL[19] <= 1;
       end else begin
 	 SRAM_SEL[19] <= 0;
@@ -267,7 +266,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[20] <= 0;
-      end if (CPU_ADR[17:12] == 6'h14)begin
+      end else if (CPU_ADR[17:12] == 6'h14)begin
 	 SRAM_SEL[20] <= 1;
       end else begin
 	 SRAM_SEL[20] <= 0;
@@ -277,7 +276,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[21] <= 0;
-      end if (CPU_ADR[17:12] == 6'h15)begin
+      end else if (CPU_ADR[17:12] == 6'h15)begin
 	 SRAM_SEL[21] <= 1;
       end else begin
 	 SRAM_SEL[21] <= 0;
@@ -287,7 +286,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[22] <= 0;
-      end if (CPU_ADR[17:12] == 6'h16)begin
+      end else if (CPU_ADR[17:12] == 6'h16)begin
 	 SRAM_SEL[22] <= 1;
       end else begin
 	 SRAM_SEL[22] <= 0;
@@ -297,7 +296,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[23] <= 0;
-      end if (CPU_ADR[17:12] == 6'h17)begin
+      end else if (CPU_ADR[17:12] == 6'h17)begin
 	 SRAM_SEL[23] <= 1;
       end else begin
 	 SRAM_SEL[23] <= 0;
@@ -307,7 +306,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[24] <= 0;
-      end if (CPU_ADR[17:12] == 6'h18)begin
+      end else if (CPU_ADR[17:12] == 6'h18)begin
 	 SRAM_SEL[24] <= 1;
       end else begin
 	 SRAM_SEL[24] <= 0;
@@ -317,7 +316,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[25] <= 0;
-      end if (CPU_ADR[17:12] == 6'h19)begin
+      end else if (CPU_ADR[17:12] == 6'h19)begin
 	 SRAM_SEL[25] <= 1;
       end else begin
 	 SRAM_SEL[25] <= 0;
@@ -327,7 +326,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[26] <= 0;
-      end if (CPU_ADR[17:12] == 6'h1a)begin
+      end else if (CPU_ADR[17:12] == 6'h1a)begin
 	 SRAM_SEL[26] <= 1;
       end else begin
 	 SRAM_SEL[26] <= 0;
@@ -337,7 +336,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[27] <= 0;
-      end if (CPU_ADR[17:12] == 6'h1b)begin
+      end else if (CPU_ADR[17:12] == 6'h1b)begin
 	 SRAM_SEL[27] <= 1;
       end else begin
 	 SRAM_SEL[27] <= 0;
@@ -347,7 +346,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[28] <= 0;
-      end if (CPU_ADR[17:12] == 6'h1c)begin
+      end else if (CPU_ADR[17:12] == 6'h1c)begin
 	 SRAM_SEL[28] <= 1;
       end else begin
 	 SRAM_SEL[28] <= 0;
@@ -357,7 +356,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[29] <= 0;
-      end if (CPU_ADR[17:12] == 6'h1d)begin
+      end else if (CPU_ADR[17:12] == 6'h1d)begin
 	 SRAM_SEL[29] <= 1;
       end else begin
 	 SRAM_SEL[29] <= 0;
@@ -367,7 +366,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[30] <= 0;
-      end if (CPU_ADR[17:12] == 6'h1e)begin
+      end else if (CPU_ADR[17:12] == 6'h1e)begin
 	 SRAM_SEL[30] <= 1;
       end else begin
 	 SRAM_SEL[30] <= 0;
@@ -377,7 +376,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[31] <= 0;
-      end if (CPU_ADR[17:12] == 6'h1f)begin
+      end else if (CPU_ADR[17:12] == 6'h1f)begin
 	 SRAM_SEL[31] <= 1;
       end else begin
 	 SRAM_SEL[31] <= 0;
@@ -387,7 +386,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[32] <= 0;
-      end if (CPU_ADR[17:12] == 6'h20)begin
+      end else if (CPU_ADR[17:12] == 6'h20)begin
 	 SRAM_SEL[32] <= 1;
       end else begin
 	 SRAM_SEL[32] <= 0;
@@ -397,7 +396,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[33] <= 0;
-      end if (CPU_ADR[17:12] == 6'h21)begin
+      end else if (CPU_ADR[17:12] == 6'h21)begin
 	 SRAM_SEL[33] <= 1;
       end else begin
 	 SRAM_SEL[33] <= 0;
@@ -407,7 +406,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[34] <= 0;
-      end if (CPU_ADR[17:12] == 6'h22)begin
+      end else if (CPU_ADR[17:12] == 6'h22)begin
 	 SRAM_SEL[34] <= 1;
       end else begin
 	 SRAM_SEL[34] <= 0;
@@ -417,7 +416,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[35] <= 0;
-      end if (CPU_ADR[17:12] == 6'h23)begin
+      end else if (CPU_ADR[17:12] == 6'h23)begin
 	 SRAM_SEL[35] <= 1;
       end else begin
 	 SRAM_SEL[35] <= 0;
@@ -427,7 +426,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[36] <= 0;
-      end if (CPU_ADR[17:12] == 6'h24)begin
+      end else if (CPU_ADR[17:12] == 6'h24)begin
 	 SRAM_SEL[36] <= 1;
       end else begin
 	 SRAM_SEL[36] <= 0;
@@ -437,7 +436,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[37] <= 0;
-      end if (CPU_ADR[17:12] == 6'h25)begin
+      end else if (CPU_ADR[17:12] == 6'h25)begin
 	 SRAM_SEL[37] <= 1;
       end else begin
 	 SRAM_SEL[37] <= 0;
@@ -447,7 +446,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[38] <= 0;
-      end if (CPU_ADR[17:12] == 6'h26)begin
+      end else if (CPU_ADR[17:12] == 6'h26)begin
 	 SRAM_SEL[38] <= 1;
       end else begin
 	 SRAM_SEL[38] <= 0;
@@ -457,7 +456,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[39] <= 0;
-      end if (CPU_ADR[17:12] == 6'h27)begin
+      end else if (CPU_ADR[17:12] == 6'h27)begin
 	 SRAM_SEL[39] <= 1;
       end else begin
 	 SRAM_SEL[39] <= 0;
@@ -467,7 +466,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[40] <= 0;
-      end if (CPU_ADR[17:12] == 6'h28)begin
+      end else if (CPU_ADR[17:12] == 6'h28)begin
 	 SRAM_SEL[40] <= 1;
       end else begin
 	 SRAM_SEL[40] <= 0;
@@ -477,7 +476,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[41] <= 0;
-      end if (CPU_ADR[17:12] == 6'h29)begin
+      end else if (CPU_ADR[17:12] == 6'h29)begin
 	 SRAM_SEL[41] <= 1;
       end else begin
 	 SRAM_SEL[41] <= 0;
@@ -487,7 +486,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[42] <= 0;
-      end if (CPU_ADR[17:12] == 6'h2a)begin
+      end else if (CPU_ADR[17:12] == 6'h2a)begin
 	 SRAM_SEL[42] <= 1;
       end else begin
 	 SRAM_SEL[42] <= 0;
@@ -497,7 +496,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[43] <= 0;
-      end if (CPU_ADR[17:12] == 6'h2b)begin
+      end else if (CPU_ADR[17:12] == 6'h2b)begin
 	 SRAM_SEL[43] <= 1;
       end else begin
 	 SRAM_SEL[43] <= 0;
@@ -507,7 +506,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[44] <= 0;
-      end if (CPU_ADR[17:12] == 6'h2c)begin
+      end else if (CPU_ADR[17:12] == 6'h2c)begin
 	 SRAM_SEL[44] <= 1;
       end else begin
 	 SRAM_SEL[44] <= 0;
@@ -517,17 +516,19 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_SEL[45] <= 0;
-      end if (CPU_ADR[17:12] == 6'h2d)begin
+      end else if (CPU_ADR[17:12] == 6'h2d)begin
 	 SRAM_SEL[45] <= 1;
       end else begin
 	 SRAM_SEL[45] <= 0;
       end
    end
 
+
+
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 BIAS_SEL <= 0;
-      end if (CPU_ADR[17:12] == 6'h2e)begin
+      end else if (CPU_ADR[17:12] == 6'h2e)begin
 	 BIAS_SEL <= 1;
       end else begin
 	 BIAS_SEL <= 0;
@@ -537,7 +538,7 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 IMAGE_SEL <= 0;
-      end if (CPU_ADR[17:12] == 6'h30)begin
+      end else if (CPU_ADR[17:12] == 6'h30)begin
 	 IMAGE_SEL <= 1;
       end else begin
 	 IMAGE_SEL <= 0;
