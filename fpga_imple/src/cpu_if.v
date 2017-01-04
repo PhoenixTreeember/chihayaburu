@@ -9,6 +9,7 @@ module cpu_if
    input [31:0]      CPU_WDATA,
    output reg [31:0] CPU_RDATA,
 
+   output reg [11:0] SRAM_ADR,
    output reg [45:0] SRAM_SEL,
    output reg 	     BIAS_SEL,
    output reg 	     IMAGE_SEL,
@@ -548,64 +549,66 @@ module cpu_if
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 SRAM_BIAS_IMG_WR <= 0;
-	 SRAM_DATA <= 32'h00000000;	 
+	 SRAM_DATA <= 32'h00000000;
+	 SRAM_ADR <= 12'd0;	 
       end else begin
 	 SRAM_BIAS_IMG_WR <= CPU_WR;
 	 SRAM_DATA <= CPU_WDATA;
+	 SRAM_ADR <= CPU_ADR[11:0];
       end
    end
 
    always @(posedge CLK or negedge RESET_X)begin
       if(RESET_X == 0)begin
 	 CPU_RDATA    <= 32'h00000000;
-      end else begin
-	 if(CPU_ADR == 18'h31000) CPU_RDATA <= RESULT_0;
-	 else if(CPU_ADR == 18'h31004) CPU_RDATA <= RESULT_1;
-	 else if(CPU_ADR == 18'h31008) CPU_RDATA <= RESULT_2;
-	 else if(CPU_ADR == 18'h3100C) CPU_RDATA <= RESULT_3;
-	 else if(CPU_ADR == 18'h31010) CPU_RDATA <= RESULT_4;
-	 else if(CPU_ADR == 18'h31014) CPU_RDATA <= RESULT_5;
-	 else if(CPU_ADR == 18'h31018) CPU_RDATA <= RESULT_6;
-	 else if(CPU_ADR == 18'h3101C) CPU_RDATA <= RESULT_7;
-	 else if(CPU_ADR == 18'h31020) CPU_RDATA <= RESULT_8;
-	 else if(CPU_ADR == 18'h31024) CPU_RDATA <= RESULT_9;
-	 else if(CPU_ADR == 18'h31000) CPU_RDATA <= RESULT_10;
-	 else if(CPU_ADR == 18'h31004) CPU_RDATA <= RESULT_11;
-	 else if(CPU_ADR == 18'h31008) CPU_RDATA <= RESULT_12;
-	 else if(CPU_ADR == 18'h3100C) CPU_RDATA <= RESULT_13;
-	 else if(CPU_ADR == 18'h31010) CPU_RDATA <= RESULT_14;
-	 else if(CPU_ADR == 18'h31014) CPU_RDATA <= RESULT_15;
-	 else if(CPU_ADR == 18'h31018) CPU_RDATA <= RESULT_16;
-	 else if(CPU_ADR == 18'h3101C) CPU_RDATA <= RESULT_17;
-	 else if(CPU_ADR == 18'h31020) CPU_RDATA <= RESULT_18;
-	 else if(CPU_ADR == 18'h31024) CPU_RDATA <= RESULT_19;
-	 else if(CPU_ADR == 18'h31000) CPU_RDATA <= RESULT_20;
-	 else if(CPU_ADR == 18'h31004) CPU_RDATA <= RESULT_21;
-	 else if(CPU_ADR == 18'h31008) CPU_RDATA <= RESULT_22;
-	 else if(CPU_ADR == 18'h3100C) CPU_RDATA <= RESULT_23;
-	 else if(CPU_ADR == 18'h31010) CPU_RDATA <= RESULT_24;
-	 else if(CPU_ADR == 18'h31014) CPU_RDATA <= RESULT_25;
-	 else if(CPU_ADR == 18'h31018) CPU_RDATA <= RESULT_26;
-	 else if(CPU_ADR == 18'h3101C) CPU_RDATA <= RESULT_27;
-	 else if(CPU_ADR == 18'h31020) CPU_RDATA <= RESULT_28;
-	 else if(CPU_ADR == 18'h31024) CPU_RDATA <= RESULT_29;
-	 else if(CPU_ADR == 18'h31000) CPU_RDATA <= RESULT_30;
-	 else if(CPU_ADR == 18'h31004) CPU_RDATA <= RESULT_31;
-	 else if(CPU_ADR == 18'h31008) CPU_RDATA <= RESULT_32;
-	 else if(CPU_ADR == 18'h3100C) CPU_RDATA <= RESULT_33;
-	 else if(CPU_ADR == 18'h31010) CPU_RDATA <= RESULT_34;
-	 else if(CPU_ADR == 18'h31014) CPU_RDATA <= RESULT_35;
-	 else if(CPU_ADR == 18'h31018) CPU_RDATA <= RESULT_36;
-	 else if(CPU_ADR == 18'h3101C) CPU_RDATA <= RESULT_37;
-	 else if(CPU_ADR == 18'h31020) CPU_RDATA <= RESULT_38;
-	 else if(CPU_ADR == 18'h31024) CPU_RDATA <= RESULT_39;
-	 else if(CPU_ADR == 18'h31000) CPU_RDATA <= RESULT_40;
-	 else if(CPU_ADR == 18'h31004) CPU_RDATA <= RESULT_41;
-	 else if(CPU_ADR == 18'h31008) CPU_RDATA <= RESULT_42;
-	 else if(CPU_ADR == 18'h3100C) CPU_RDATA <= RESULT_43;
-	 else if(CPU_ADR == 18'h31010) CPU_RDATA <= RESULT_44;
-	 else if(CPU_ADR == 18'h31014) CPU_RDATA <= RESULT_45;
-	 else CPU_RDATA <= 32'h00000000;
+      end else if(CPU_RD==1) begin
+         if(CPU_ADR == 18'h31000) CPU_RDATA <= RESULT_0;
+         else if(CPU_ADR == 18'h31004) CPU_RDATA <= RESULT_1;
+         else if(CPU_ADR == 18'h31008) CPU_RDATA <= RESULT_2;
+         else if(CPU_ADR == 18'h3100C) CPU_RDATA <= RESULT_3;
+         else if(CPU_ADR == 18'h31010) CPU_RDATA <= RESULT_4;
+         else if(CPU_ADR == 18'h31014) CPU_RDATA <= RESULT_5;
+         else if(CPU_ADR == 18'h31018) CPU_RDATA <= RESULT_6;
+         else if(CPU_ADR == 18'h3101C) CPU_RDATA <= RESULT_7;
+         else if(CPU_ADR == 18'h31020) CPU_RDATA <= RESULT_8;
+         else if(CPU_ADR == 18'h31024) CPU_RDATA <= RESULT_9;
+         else if(CPU_ADR == 18'h31000) CPU_RDATA <= RESULT_10;
+         else if(CPU_ADR == 18'h31004) CPU_RDATA <= RESULT_11;
+         else if(CPU_ADR == 18'h31008) CPU_RDATA <= RESULT_12;
+         else if(CPU_ADR == 18'h3100C) CPU_RDATA <= RESULT_13;
+         else if(CPU_ADR == 18'h31010) CPU_RDATA <= RESULT_14;
+         else if(CPU_ADR == 18'h31014) CPU_RDATA <= RESULT_15;
+         else if(CPU_ADR == 18'h31018) CPU_RDATA <= RESULT_16;
+         else if(CPU_ADR == 18'h3101C) CPU_RDATA <= RESULT_17;
+         else if(CPU_ADR == 18'h31020) CPU_RDATA <= RESULT_18;
+         else if(CPU_ADR == 18'h31024) CPU_RDATA <= RESULT_19;
+         else if(CPU_ADR == 18'h31000) CPU_RDATA <= RESULT_20;
+         else if(CPU_ADR == 18'h31004) CPU_RDATA <= RESULT_21;
+         else if(CPU_ADR == 18'h31008) CPU_RDATA <= RESULT_22;
+         else if(CPU_ADR == 18'h3100C) CPU_RDATA <= RESULT_23;
+         else if(CPU_ADR == 18'h31010) CPU_RDATA <= RESULT_24;
+         else if(CPU_ADR == 18'h31014) CPU_RDATA <= RESULT_25;
+         else if(CPU_ADR == 18'h31018) CPU_RDATA <= RESULT_26;
+         else if(CPU_ADR == 18'h3101C) CPU_RDATA <= RESULT_27;
+         else if(CPU_ADR == 18'h31020) CPU_RDATA <= RESULT_28;
+         else if(CPU_ADR == 18'h31024) CPU_RDATA <= RESULT_29;
+         else if(CPU_ADR == 18'h31000) CPU_RDATA <= RESULT_30;
+         else if(CPU_ADR == 18'h31004) CPU_RDATA <= RESULT_31;
+         else if(CPU_ADR == 18'h31008) CPU_RDATA <= RESULT_32;
+         else if(CPU_ADR == 18'h3100C) CPU_RDATA <= RESULT_33;
+         else if(CPU_ADR == 18'h31010) CPU_RDATA <= RESULT_34;
+         else if(CPU_ADR == 18'h31014) CPU_RDATA <= RESULT_35;
+         else if(CPU_ADR == 18'h31018) CPU_RDATA <= RESULT_36;
+         else if(CPU_ADR == 18'h3101C) CPU_RDATA <= RESULT_37;
+         else if(CPU_ADR == 18'h31020) CPU_RDATA <= RESULT_38;
+         else if(CPU_ADR == 18'h31024) CPU_RDATA <= RESULT_39;
+         else if(CPU_ADR == 18'h31000) CPU_RDATA <= RESULT_40;
+         else if(CPU_ADR == 18'h31004) CPU_RDATA <= RESULT_41;
+         else if(CPU_ADR == 18'h31008) CPU_RDATA <= RESULT_42;
+         else if(CPU_ADR == 18'h3100C) CPU_RDATA <= RESULT_43;
+         else if(CPU_ADR == 18'h31010) CPU_RDATA <= RESULT_44;
+         else if(CPU_ADR == 18'h31014) CPU_RDATA <= RESULT_45;
+         else CPU_RDATA <= 32'h00000000;
       end
    end
 

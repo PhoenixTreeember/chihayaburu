@@ -16,8 +16,14 @@ module softmax_top
    wire 	     image_sel;
    wire 	     sram_bias_img_wr;
    wire [31:0]     sram_data;
+   wire [11:0] 	   sram_adr;
    
-   wire [31:0]      result_0;
+   
+   wire [28*28*8-1:0] w0_out;
+//   wire img [28*28*8-1:0];
+   
+		     
+   wire [31:0] 	   result_0;
    wire [31:0]      result_1;
    wire [31:0]      result_2;
    wire [31:0]      result_3;
@@ -82,7 +88,8 @@ module softmax_top
       .IMAGE_SEL(image_sel),
       .SRAM_BIAS_IMG_WR(sram_bias_img_wr),
       .SRAM_DATA(sram_data),
-
+      .SRAM_ADR(sram_adr),
+      
       .RESULT_0(result_0),
       .RESULT_1(result_1),
       .RESULT_2(result_2),
@@ -133,8 +140,22 @@ module softmax_top
 
 
 
+
+   //** sram W0
+   img_sram W0
+  (
+   .CLK(CLK),
+   .CS(sram_sel[0]),
+   .WR(sram_bias_img_wr),
+   .ADR(sram_adr),
+   .WDATA(sram_data[7:0]),
+   .RDATA(w0_out)
+   );
+   
+   
+
    //dummy
-   assign       result_0 = 31'd0;
+   assign       result_0 = w0_out[31:0];
    assign       result_1 = 31'd1;
    assign       result_2 = 31'd2;
    assign       result_3 = 31'd3;
