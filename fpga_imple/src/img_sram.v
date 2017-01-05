@@ -2372,7 +2372,6 @@ module img_sram
    assign RDATA[6255:6248] = RDATA_781;
    assign RDATA[6263:6256] = RDATA_782;
    assign RDATA[6271:6264] = RDATA_783;
-
    
 
 endmodule // img_sram
