@@ -112,8 +112,9 @@ module mul_add
       .IMG(IMG), 
       .RESULT(RESULT_0)
       );
-      /*
+
    mul_add_core U1 (.CLK(CLK), .RESET_X(RESET_X), .W(W1), .B(BIAS[15:8]), .IMG(IMG), .RESULT(RESULT_1));
+/*
    mul_add_core U2 (.CLK(CLK), .RESET_X(RESET_X), .W(W2), .B(BIAS[23:16]), .IMG(IMG), .RESULT(RESULT_2));
    mul_add_core U3 (.CLK(CLK), .RESET_X(RESET_X), .W(W3), .B(BIAS[31:24]), .IMG(IMG), .RESULT(RESULT_3));
    mul_add_core U4 (.CLK(CLK), .RESET_X(RESET_X), .W(W4), .B(BIAS[39:32]), .IMG(IMG), .RESULT(RESULT_4));
@@ -161,8 +162,7 @@ module mul_add
    */						       
 						       
 						       
-   assign        RESULT_1 = 0;
-   assign        RESULT_2 = 0;
+     assign        RESULT_2 = 0;
    assign        RESULT_3 = 0;
    assign        RESULT_4 = 0;
    assign        RESULT_5 = 0;

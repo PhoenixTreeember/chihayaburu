@@ -201,6 +201,19 @@ module softmax_top
    .RDATA(w0_out)
    );
 
+
+   //** sram W0
+   img_sram W1
+  (
+   .CLK(CLK),
+   .CS(sram_sel[1]),
+   .WR(sram_bias_img_wr),
+   .ADR(sram_adr),
+   .WDATA(sram_data[7:0]),
+   .RDATA(w1_out)
+   );
+
+
    //** bias
    img_sram B
   (
@@ -335,7 +348,6 @@ module softmax_top
 
 
 
-   assign  w1_out = 0;
    assign  w2_out = 0;
    assign  w3_out = 0;
    assign  w4_out = 0;
